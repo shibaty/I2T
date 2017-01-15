@@ -3,11 +3,14 @@ Description=I2T Daemon
 After=network.target remote-fs.target
 
 [Service]
+WorkingDirectory=/home/pi/I2T
 ExecStart=/home/pi/I2T/I2T.py
 Restart=always
 Type=forking
 PIDFile=/var/run/I2T.pid
-WorkingDirectory=/home/pi/I2T
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=I2T
 
 [Install]
 WantedBy=multi-user.target
