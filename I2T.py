@@ -6,6 +6,7 @@ import sys
 import urllib
 import time
 from datetime import datetime
+import httplib2
 
 import config
 from InstagramClient import InstagramClient
@@ -57,13 +58,14 @@ def postTwitter():
     message = u"{0} {1}".format(caption, link)
     twit.postWithMedia(message, filepath)
 
-# main 
 def mainRoutine():
     while True:
-
-        if getInstagramRecentPost():
-            "post to Twitter from Intagram Recent Media."
-            postTwitter()
+        try:
+            if getInstagramRecentPost():
+                "post to Twitter from Intagram Recent Media."
+                postTwitter()
+        except httplib2.ServerNotFoundError:
+            print "Network is unavailable?"
 
         print "sleeping {0} seconds...".format(interval)
         time.sleep(interval)
@@ -80,5 +82,6 @@ def fork():
     if pid == 0:
         mainRoutine()
 
+# main 
 if __name__=='__main__': 
     fork()
