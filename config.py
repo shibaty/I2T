@@ -1,5 +1,6 @@
 #!/usr/bin/evn python
 # -*- coding: utf-8 -*-
+"""config"""
 
 CONFIG = {
     "INTERVAL_SECONDS": 180,
@@ -11,4 +12,3 @@ CONFIG = {
     "INSTAGRAM_CLIENT_SECRET": "",
     "INSTAGRAM_ACCESS_TOKEN": "",
 }
-

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+""" Instagram to Twitter """
 
 import os
 import sys
@@ -12,76 +13,75 @@ import config
 from InstagramClient import InstagramClient
 from TwitterClient import TwitterClient
 
-interval = config.CONFIG["INTERVAL_SECONDS"]
-caption = ""
-link = ""
-filepath = "/tmp/InstaTemp.jpg"
+INTERVAL = config.CONFIG["INTERVAL_SECONDS"]
+caption = " "
+link = " "
+FILEPATH = "/tmp/InstaTemp.jpg"
 
-def downloadImage(url, filepath):
-    urllib.urlretrieve(url, filepath)
+def download_image(url):
+    """donload image"""
+    urllib.urlretrieve(url, FILEPATH)
 
-def getInstagramRecentPost():
+def get_instagram_recent_post():
+    """get Instagram recent post"""
     global caption
     global link
 
-    insta = InstagramClient(
-        config.CONFIG["INSTAGRAM_ACCESS_TOKEN"],
-        config.CONFIG["INSTAGRAM_CLIENT_SECRET"])
+    insta = InstagramClient(config.CONFIG["INSTAGRAM_ACCESS_TOKEN"],
+                            config.CONFIG["INSTAGRAM_CLIENT_SECRET"])
 
-    media = insta.getRecentMedia()
+    media = insta.get_recent_media()
 
-    createdTime = media.getCreatedTime()
-    nowTime = datetime.utcnow()
-    delta = nowTime - createdTime 
+    created_time = media.get_created_time()
+    now_time = datetime.utcnow()
+    delta = now_time - created_time
 
-    if delta.total_seconds() >= interval:
+    if delta.total_seconds() >= INTERVAL:
         return False
 
-    caption = media.getCaption()
-    link = media.getLink()
-    imageUrl = media.getImageUrl()
+    caption = media.get_caption()
+    link = media.get_link()
+    image_url = media.get_image_url()
 
-    downloadImage(imageUrl, filepath)
+    download_image(image_url)
 
     return True
 
-def postTwitter():
-    global caption
-    global link
-
-    twit = TwitterClient(
-        config.CONFIG["TWITTER_CONSUMER_KEY"],
-        config.CONFIG["TWITTER_CONSUMER_SECRET"],
-        config.CONFIG["TWITTER_ACCESS_TOKEN_KEY"],
-        config.CONFIG["TWITTER_ACCESS_TOKEN_SECRET"])
+def post_twitter():
+    """post twitter"""
+    twit = TwitterClient(config.CONFIG["TWITTER_CONSUMER_KEY"],
+                         config.CONFIG["TWITTER_CONSUMER_SECRET"],
+                         config.CONFIG["TWITTER_ACCESS_TOKEN_KEY"],
+                         config.CONFIG["TWITTER_ACCESS_TOKEN_SECRET"])
 
     message = u"{0} {1}".format(caption, link)
-    twit.postWithMedia(message, filepath)
+    twit.post_with_media(message, FILEPATH)
 
-def mainRoutine():
+def main_routine():
+    """main routine"""
     while True:
         try:
-            if getInstagramRecentPost():
-                "post to Twitter from Intagram Recent Media."
-                postTwitter()
+            if get_instagram_recent_post():
+                post_twitter()
         except httplib2.ServerNotFoundError:
             print "Network is unavailable?"
 
-        print "sleeping {0} seconds...".format(interval)
-        time.sleep(interval)
+        print "sleeping {0} seconds...".format(INTERVAL)
+        time.sleep(INTERVAL)
 
 def fork():
+    """fork"""
     pid = os.fork()
 
     if pid > 0:
-        f = open('/var/run/I2T.pid','w')
-        f.write(str(pid)+"\n")
-        f.close()
+        pid_file = open('/var/run/I2T.pid', 'w')
+        pid_file.write(str(pid) + "\n")
+        pid_file.close()
         sys.exit()
 
     if pid == 0:
-        mainRoutine()
+        main_routine()
 
-# main 
-if __name__=='__main__': 
+# main
+if __name__ == '__main__':
     fork()
