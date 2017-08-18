@@ -55,6 +55,9 @@ def post_twitter():
                          config.CONFIG["TWITTER_ACCESS_TOKEN_SECRET"])
 
     message = u"{0} {1}".format(caption, link)
+    if len(message) > 140:
+        message = caption
+    message = message[0:140]
     twit.post_with_media(message, FILEPATH)
 
 def main_routine():
