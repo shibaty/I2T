@@ -13,7 +13,6 @@ from InstagramClient import InstagramClient
 from TwitterClient import TwitterClient
 
 INTERVAL = config.CONFIG['INTERVAL_SECONDS']
-FILEPATH = "/tmp/Instagram/"
 
 def download_medias(urls):
     """donload medias"""
