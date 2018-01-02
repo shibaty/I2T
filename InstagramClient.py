@@ -5,6 +5,7 @@
 from datetime import datetime
 import requests
 
+
 # pylint: disable=R0903
 class InstagramClient(object):
     """Instagram Client"""
@@ -22,6 +23,7 @@ class InstagramClient(object):
         response = requests.get(endpoint, params)
 
         return InstagramClientMedia(response.json()['data'][0])
+
 
 class InstagramClientMedia(object):
     """Instagram Client Media"""
