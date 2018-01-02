@@ -3,8 +3,10 @@
 """ Instagram to Twitter """
 
 import os
+import os.path
 import sys
-import urllib
+import urllib.request
+import shutil
 import time
 from datetime import datetime
 
@@ -13,18 +15,26 @@ from InstagramClient import InstagramClient
 from TwitterClient import TwitterClient
 
 INTERVAL = config.CONFIG['INTERVAL_SECONDS']
+DOWNLOAD_FILE_PATH = '/tmp/'
+
 
 def download_medias(urls):
     """donload medias"""
     paths = []
     for url in urls:
-        path = urllib.request.urlretrieve(url)
-        paths.append(path[0])
+        filename = url.rsplit('/', 1)[1].split('?')[0]
+        path = DOWNLOAD_FILE_PATH + filename
+        with urllib.request.urlopen(url) as data, open(path, 'wb') as file:
+            shutil.copyfileobj(data, file)
+        paths.append(path)
     return paths
 
-def cleanup_medias():
+
+def cleanup_medias(paths):
     """cleanup downloaded medias"""
-    urllib.request.urlcleanup()
+    for path in paths:
+        os.remove(path)
+
 
 def get_instagram_recent_post():
     """get Instagram recent post"""
@@ -47,19 +57,47 @@ def get_instagram_recent_post():
 
     return True, caption, link, urls
 
+
 def post_twitter(caption, link, paths):
     """post twitter"""
+    # for debug print
+    print(link)
+
     twit = TwitterClient(config.CONFIG['TWITTER_CONSUMER_KEY'],
                          config.CONFIG['TWITTER_CONSUMER_SECRET'],
                          config.CONFIG['TWITTER_ACCESS_TOKEN_KEY'],
                          config.CONFIG['TWITTER_ACCESS_TOKEN_SECRET'])
 
-    #message = u"{0} {1}".format(caption, link)
-    #if len(message) > 140:
-    #    message = caption
+    media_ids = []
+    media_video_ids = []
+    for path in paths:
+        _, ext = os.path.splitext(path)
+        if ext == '.mp4':
+            media_video_ids.append(twit.media_upload_video(path))
+        else:
+            media_ids.append(twit.media_upload(path))
+
     message = caption
-    message = message[0:140]
-    twit.post_with_medias(message, paths)
+
+    media_ids_len = len(media_ids)
+    media_video_ids_len = len(media_video_ids)
+    count = 1
+    count_max = 0
+
+    if media_ids_len > 0:
+        if media_video_ids_len > 0:
+            count_max = media_ids_len + media_video_ids_len
+            message = str(count) + "/" + str(count_max) + " " + message
+            count = count + 1
+        message = message[0:140]
+        twit.post_with_medias(message, media_ids)
+
+    for media_video_id in media_video_ids:
+        message = str(count) + "/" + str(count_max) + " " + caption
+        message = message[0:140]
+        twit.post_with_medias(message, {media_video_id})
+        count = count + 1
+
 
 def main_routine():
     """main routine"""
@@ -70,12 +108,13 @@ def main_routine():
             if ret:
                 paths = download_medias(urls)
                 post_twitter(caption, link, paths)
-                cleanup_medias()
+                cleanup_medias(paths)
         except IOError:
             print("Network unreachable?")
 
         print("sleeping {0} seconds...".format(INTERVAL))
         time.sleep(INTERVAL)
+
 
 def fork():
     """fork"""
@@ -89,6 +128,7 @@ def fork():
 
     if pid == 0:
         main_routine()
+
 
 # main
 if __name__ == '__main__':
