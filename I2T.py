@@ -3,7 +3,6 @@
 """ Instagram to Twitter """
 
 import os
-import os.path
 import sys
 import urllib.request
 import shutil
