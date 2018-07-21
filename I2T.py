@@ -76,24 +76,24 @@ def post_twitter(caption, link, paths):
         else:
             media_ids.append(twit.media_upload(path))
 
-    message = caption
-
     media_ids_len = len(media_ids)
     media_video_ids_len = len(media_video_ids)
     count = 1
     count_max = 0
+    count_message = ""
 
     if media_ids_len > 0:
         if media_video_ids_len > 0:
             count_max = media_ids_len + media_video_ids_len
-            message = str(count) + "/" + str(count_max) + " " + message
+            count_message = str(count) + "/" + str(count_max) + " "
             count = count + 1
-        message = message[0:140]
+        message = (count_message + caption)[0:140]
         twit.post_with_medias(message, media_ids)
 
     for media_video_id in media_video_ids:
-        message = str(count) + "/" + str(count_max) + " " + caption
-        message = message[0:140]
+        if count_max > 1:
+            count_message = str(count) + "/" + str(count_max) + " "
+        message = (count_message + caption)[0:140]
         twit.post_with_medias(message, {media_video_id})
         count = count + 1
 
