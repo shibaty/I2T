@@ -4,7 +4,7 @@ After=network.target remote-fs.target
 
 [Service]
 WorkingDirectory=/home/pi/I2T
-ExecStart=/home/pi/I2T/I2T.py
+ExecStart=/usr/local/bin/pipenv run python /home/pi/I2T/I2T.py
 Restart=always
 Type=forking
 PIDFile=/var/run/I2T.pid
