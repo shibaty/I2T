@@ -4,4 +4,4 @@
 
 import I2T
 
-I2T.main_routine()
+I2T.get_and_post()

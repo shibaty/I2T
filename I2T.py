@@ -97,38 +97,29 @@ def post_twitter(caption, link, paths):
         twit.post_with_medias(message, {media_video_id})
         count = count + 1
 
+def get_and_post():
+    """get instagram recent post and post twitter"""
+    try:
+        ret, caption, link, urls = get_instagram_recent_post()
+        if ret:
+            paths = download_medias(urls)
+            post_twitter(caption, link, paths)
+            cleanup_medias(paths)
+        else:
+            print("instagram recent post not found.");
+    except IOError:
+        print("Network unreachable?")
 
 def main_routine():
     """main routine"""
 
     while True:
-        try:
-            ret, caption, link, urls = get_instagram_recent_post()
-            if ret:
-                paths = download_medias(urls)
-                post_twitter(caption, link, paths)
-                cleanup_medias(paths)
-        except IOError:
-            print("Network unreachable?")
+        get_and_post()
 
         print("sleeping {0} seconds...".format(INTERVAL))
         time.sleep(INTERVAL)
 
-
-def fork():
-    """fork"""
-    pid = os.fork()
-
-    if pid > 0:
-        pid_file = open("/var/run/I2T.pid", 'w')
-        pid_file.write(str(pid) + "\n")
-        pid_file.close()
-        sys.exit()
-
-    if pid == 0:
-        main_routine()
-
-
 # main
 if __name__ == '__main__':
-    fork()
+    main_routine()
+
