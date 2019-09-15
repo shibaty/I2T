@@ -20,7 +20,9 @@ DOWNLOAD_FILE_PATH = '/tmp/'
 def download_medias(urls):
     """donload medias"""
     paths = []
-    for url in urls:
+    for count, url in enumerate(urls):
+        if count >= config.CONFIG['TWITTER_MEDIAS_MAX']:
+            break
         filename = url.rsplit('/', 1)[1].split('?')[0]
         path = DOWNLOAD_FILE_PATH + filename
         with urllib.request.urlopen(url) as data, open(path, 'wb') as file:
@@ -59,8 +61,6 @@ def get_instagram_recent_post():
 
 def post_twitter(caption, link, paths):
     """post twitter"""
-    # for debug print
-    print(link)
 
     twit = TwitterClient(config.CONFIG['TWITTER_CONSUMER_KEY'],
                          config.CONFIG['TWITTER_CONSUMER_SECRET'],
@@ -105,8 +105,6 @@ def get_and_post():
             paths = download_medias(urls)
             post_twitter(caption, link, paths)
             cleanup_medias(paths)
-        else:
-            print("instagram recent post not found.");
     except IOError:
         print("Network unreachable?")
 
@@ -116,7 +114,6 @@ def main_routine():
     while True:
         get_and_post()
 
-        print("sleeping {0} seconds...".format(INTERVAL))
         time.sleep(INTERVAL)
 
 # main
