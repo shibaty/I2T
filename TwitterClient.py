@@ -3,6 +3,7 @@
 """Twitter Client"""
 
 import os.path
+import mimetypes
 import time
 import twitter
 
@@ -23,17 +24,10 @@ class TwitterClient(object):
 
     def media_upload(self, path):
         """Media Upload"""
-        with open(path, 'rb') as file:
-            data = file.read()
-            media_id = self.upload_api.media.upload(
-                media=data)['media_id_string']
-        return media_id
-
-    def media_upload_video(self, path):
-        """Media Upload Video"""
+        mime_type = mimetypes.guess_type(path)[0]
         file_size = os.path.getsize(path)
         media_id = self.upload_api.media.upload(
-            command='INIT', media_type='video/mp4',
+            command='INIT', media_type=mime_type,
             total_bytes=file_size)['media_id_string']
 
         with open(path, 'rb') as file:

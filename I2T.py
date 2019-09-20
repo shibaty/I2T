@@ -72,7 +72,7 @@ def post_twitter(caption, link, paths):
     for path in paths:
         _, ext = os.path.splitext(path)
         if ext == '.mp4':
-            media_video_ids.append(twit.media_upload_video(path))
+            media_video_ids.append(twit.media_upload(path))
         else:
             media_ids.append(twit.media_upload(path))
 
