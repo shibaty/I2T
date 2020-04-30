@@ -7,13 +7,13 @@ import sys
 import urllib.request
 import shutil
 import time
+import mimetypes
 from datetime import datetime
 
 import config
 from InstagramClient import InstagramClient
 from TwitterClient import TwitterClient
 
-INTERVAL = config.CONFIG['INTERVAL_SECONDS']
 DOWNLOAD_FILE_PATH = '/tmp/'
 
 
@@ -37,7 +37,7 @@ def cleanup_medias(paths):
         os.remove(path)
 
 
-def get_instagram_recent_post():
+def get_instagram_recent_post(interval):
     """get Instagram recent post"""
 
     insta = InstagramClient(config.CONFIG['INSTAGRAM_ACCESS_TOKEN'],
@@ -49,12 +49,14 @@ def get_instagram_recent_post():
     now_time = datetime.utcnow()
     delta = now_time - created_time
 
-    if delta.total_seconds() >= INTERVAL:
+    if delta.total_seconds() >= interval + 10:
         return False, "", "", []
 
     caption = media.get_caption()
     link = media.get_link()
     urls = media.get_media_urls()
+
+    print("get instagram Caption: " + caption)
 
     return True, caption, link, urls
 
@@ -62,45 +64,48 @@ def get_instagram_recent_post():
 def post_twitter(caption, link, paths):
     """post twitter"""
 
+    print("post twitter Caption: " + caption)
+
     twit = TwitterClient(config.CONFIG['TWITTER_CONSUMER_KEY'],
                          config.CONFIG['TWITTER_CONSUMER_SECRET'],
                          config.CONFIG['TWITTER_ACCESS_TOKEN_KEY'],
                          config.CONFIG['TWITTER_ACCESS_TOKEN_SECRET'])
 
     media_ids = []
-    media_video_ids = []
+    media_videos_count = 0
     for path in paths:
-        _, ext = os.path.splitext(path)
-        if ext == '.mp4':
-            media_video_ids.append(twit.media_upload(path))
+        mime_type = mimetypes.guess_type(path)[0]
+        if 'video' in mime_type:
+            media_videos_count = media_videos_count + 1
         else:
-            media_ids.append(twit.media_upload(path))
+            media_ids.append(twit.media_upload(path, mime_type))
 
     media_ids_len = len(media_ids)
-    media_video_ids_len = len(media_video_ids)
     count = 1
     count_max = 0
     count_message = ""
 
     if media_ids_len > 0:
-        if media_video_ids_len > 0:
-            count_max = media_ids_len + media_video_ids_len
+        if media_videos_count > 0:
+            count_max = 1 + media_videos_count
             count_message = str(count) + "/" + str(count_max) + " "
             count = count + 1
         message = (count_message + caption)[0:140]
         twit.post_with_medias(message, media_ids)
 
-    for media_video_id in media_video_ids:
-        if count_max > 1:
+    for path in paths:
+        mime_type = mimetypes.guess_type(path)[0]
+        if 'video' in mime_type:
             count_message = str(count) + "/" + str(count_max) + " "
-        message = (count_message + caption)[0:140]
-        twit.post_with_medias(message, {media_video_id})
-        count = count + 1
+            message = (count_message + caption)[0:140]
+            media_video_id = twit.media_upload(path, mime_type)
+            twit.post_with_medias(message, {media_video_id})
+            count = count + 1
 
-def get_and_post():
+def get_and_post(interval):
     """get instagram recent post and post twitter"""
     try:
-        ret, caption, link, urls = get_instagram_recent_post()
+        ret, caption, link, urls = get_instagram_recent_post(interval)
         if ret:
             paths = download_medias(urls)
             post_twitter(caption, link, paths)
@@ -110,11 +115,12 @@ def get_and_post():
 
 def main_routine():
     """main routine"""
+    interval = config.CONFIG['INTERVAL_SECONDS']
 
+    print("I2T INTERVAL:" + str(interval) + " secs")
     while True:
-        get_and_post()
-
-        time.sleep(INTERVAL)
+        get_and_post(interval)
+        time.sleep(interval)
 
 # main
 if __name__ == '__main__':

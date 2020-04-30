@@ -3,7 +3,6 @@
 """Twitter Client"""
 
 import os.path
-import mimetypes
 import time
 import twitter
 
@@ -22,12 +21,15 @@ class TwitterClient(object):
         """Post Message"""
         self.api.statuses.update(status=message)
 
-    def media_upload(self, path):
+    def media_upload(self, path, mime_type):
         """Media Upload"""
-        mime_type = mimetypes.guess_type(path)[0]
         file_size = os.path.getsize(path)
+        media_category = 'TweetImage'
+        if 'video' in mime_type:
+            media_category = 'tweet_video'
         media_id = self.upload_api.media.upload(
             command='INIT', media_type=mime_type,
+            media_category=media_category,
             total_bytes=file_size)['media_id_string']
 
         with open(path, 'rb') as file:
@@ -45,7 +47,8 @@ class TwitterClient(object):
                 seg_id = seg_id + 1
 
         finalize_result = self.upload_api.media.upload(
-            command='FINALIZE', media_id=media_id)
+            command='FINALIZE',
+            media_id=media_id)
 
         if 'processing_info' in finalize_result:
             processing_info = finalize_result['processing_info']
@@ -55,8 +58,13 @@ class TwitterClient(object):
 
                 time.sleep(processing_info['check_after_secs'])
 
-                processing_info = self.upload_api.media.upload(
-                    command='STATUS', media_id=media_id)['processing_info']
+                status_result = self.upload_api.media.upload(
+                    command='STATUS',
+                    media_id=media_id,
+                    _method='GET')
+                if not 'processing_info' in status_result:
+                    break
+                processing_info = status_result['processing_info']
 
         return media_id
 
