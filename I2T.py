@@ -49,7 +49,7 @@ def get_instagram_recent_post(interval):
     now_time = datetime.utcnow()
     delta = now_time - created_time
 
-    if delta.total_seconds() >= interval + 10:
+    if int(delta.total_seconds()) >= interval + 10:
         return False, "", "", []
 
     caption = media.get_caption()
