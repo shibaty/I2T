@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """ Instagram to Twitter """
 
@@ -7,11 +6,11 @@ import urllib.request
 import shutil
 import time
 import mimetypes
-from datetime import datetime
+from datetime import datetime, timezone
 
-import config
-from InstagramClient import InstagramClient
-from TwitterClient import TwitterClient
+from settings.Settings import Settings
+from clients.InstagramClient import InstagramClient
+from clients.TwitterClient import TwitterClient
 
 DOWNLOAD_FILE_PATH = '/tmp/'
 
@@ -19,8 +18,10 @@ DOWNLOAD_FILE_PATH = '/tmp/'
 def download_medias(urls):
   """donload medias"""
   paths = []
+  settings = Settings.get_instance()
+  medias_max = int(settings.get_config('TWITTER_MEDIAS_MAX'))
   for count, url in enumerate(urls):
-    if count >= config.CONFIG['TWITTER_MEDIAS_MAX']:
+    if count >= medias_max:
       break
     filename = url.rsplit('/', 1)[1].split('?')[0]
     path = DOWNLOAD_FILE_PATH + filename
@@ -39,36 +40,37 @@ def cleanup_medias(paths):
 def get_instagram_recent_post(interval):
   """get Instagram recent post"""
 
-  insta = InstagramClient(config.CONFIG['INSTAGRAM_ACCESS_TOKEN'],
-                          config.CONFIG['INSTAGRAM_CLIENT_SECRET'])
+  settings = Settings.get_instance()
+  insta = InstagramClient(settings.get_config('INSTAGRAM_ACCESS_TOKEN'))
 
   media = insta.get_recent_media()
 
-  created_time = media.get_created_time()
-  now_time = datetime.utcnow()
+  created_time = media.get_timestamp()
+  now_time = datetime.now(timezone.utc)
   delta = now_time - created_time
 
   if int(delta.total_seconds()) >= interval + 10:
     return False, "", "", []
 
   caption = media.get_caption()
-  link = media.get_link()
   urls = media.get_media_urls()
 
   print("get instagram Caption: " + caption)
 
-  return True, caption, link, urls
+  return True, caption, urls
 
 
-def post_twitter(caption, link, paths):
+def post_twitter(caption, paths):
   """post twitter"""
 
   print("post twitter Caption: " + caption)
 
-  twit = TwitterClient(config.CONFIG['TWITTER_CONSUMER_KEY'],
-                       config.CONFIG['TWITTER_CONSUMER_SECRET'],
-                       config.CONFIG['TWITTER_ACCESS_TOKEN_KEY'],
-                       config.CONFIG['TWITTER_ACCESS_TOKEN_SECRET'])
+  settings = Settings.get_instance()
+  config = settings.get_config_all()
+  twit = TwitterClient(config['TWITTER_CONSUMER_KEY'],
+                       config['TWITTER_CONSUMER_SECRET'],
+                       config['TWITTER_ACCESS_TOKEN_KEY'],
+                       config['TWITTER_ACCESS_TOKEN_SECRET'])
 
   media_ids = []
   media_videos_count = 0
@@ -105,10 +107,10 @@ def post_twitter(caption, link, paths):
 def get_and_post(interval):
   """get instagram recent post and post twitter"""
   try:
-    ret, caption, link, urls = get_instagram_recent_post(interval)
+    ret, caption, urls = get_instagram_recent_post(interval)
     if ret:
       paths = download_medias(urls)
-      post_twitter(caption, link, paths)
+#      post_twitter(caption, paths)
       cleanup_medias(paths)
   except IOError:
     print("Network unreachable?")
@@ -116,7 +118,8 @@ def get_and_post(interval):
 
 def main_routine():
   """main routine"""
-  interval = config.CONFIG['INTERVAL_SECONDS']
+  settings = Settings.get_instance()
+  interval = settings.get_config('INTERVAL_SECONDS')
 
   print("I2T INTERVAL:" + str(interval) + " secs")
   while True:

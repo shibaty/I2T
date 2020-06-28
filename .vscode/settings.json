@@ -11,10 +11,11 @@
   "python.formatting.autopep8Args": [
     "--indent-size=2",
     "--aggressive",
-    "--aggressive",
+    "--aggressive"
   ],
   "autoDocstring.docstringFormat": "google",
   "editor.formatOnSave": true,
   "editor.formatOnType": true,
-  "python.pythonPath": ".venv/bin/python"
+  "python.pythonPath": ".venv/bin/python",
+  "python.languageServer": "Microsoft"
 }
