@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """config"""
 
+DBNAME = 'I2T.db'
+
 CONFIG = {
     'INTERVAL_SECONDS': 180,
     'TWITTER_CONSUMER_KEY': "",
