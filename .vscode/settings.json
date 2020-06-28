@@ -16,5 +16,5 @@
   "autoDocstring.docstringFormat": "google",
   "editor.formatOnSave": true,
   "editor.formatOnType": true,
-  "python.pythonPath": "/home/pi/.local/share/virtualenvs/I2T-wtisIv3G/bin/python"
+  "python.pythonPath": ".venv/bin/python"
 }
