@@ -50,12 +50,12 @@ def get_instagram_recent_post(interval):
   delta = now_time - created_time
 
   if int(delta.total_seconds()) >= interval + 10:
-    return False, "", "", []
+    return False, '', []
 
   caption = media.get_caption()
   urls = media.get_media_urls()
 
-  print("get instagram Caption: " + caption)
+  print('get instagram Caption: ' + caption)
 
   return True, caption, urls
 
@@ -113,7 +113,7 @@ def get_and_post(interval):
       post_twitter(caption, paths)
       cleanup_medias(paths)
   except IOError:
-    print("Network unreachable?")
+    print('Network unreachable?')
 
 
 def main_routine():
@@ -121,7 +121,7 @@ def main_routine():
   settings = Settings.get_instance()
   interval = int(settings.get_config('INTERVAL_SECONDS'))
 
-  print("I2T INTERVAL:" + str(interval) + " secs")
+  print('I2T INTERVAL:' + str(interval) + ' secs')
   while True:
     get_and_post(interval)
     time.sleep(interval)
