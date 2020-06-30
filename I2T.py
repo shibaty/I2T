@@ -110,7 +110,7 @@ def get_and_post(interval):
     ret, caption, urls = get_instagram_recent_post(interval)
     if ret:
       paths = download_medias(urls)
-#      post_twitter(caption, paths)
+      post_twitter(caption, paths)
       cleanup_medias(paths)
   except IOError:
     print("Network unreachable?")
@@ -119,7 +119,7 @@ def get_and_post(interval):
 def main_routine():
   """main routine"""
   settings = Settings.get_instance()
-  interval = settings.get_config('INTERVAL_SECONDS')
+  interval = int(settings.get_config('INTERVAL_SECONDS'))
 
   print("I2T INTERVAL:" + str(interval) + " secs")
   while True:

@@ -48,7 +48,7 @@ class Settings(object):
       cur = conn.cursor()
       cur.execute('select * from config')
       rows = cur.fetchall()
-      config = []
+      config = {}
       for row in rows:
         config[row['key']] = row['value']
       return config
