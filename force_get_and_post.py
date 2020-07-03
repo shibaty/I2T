@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""run standalone"""
+"""run standalone force"""
 
 import I2T
 

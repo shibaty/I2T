@@ -2,6 +2,7 @@
 """ Instagram to Twitter """
 
 import os
+import schedule
 import urllib.request
 import shutil
 import time
@@ -37,13 +38,24 @@ def cleanup_medias(paths):
     os.remove(path)
 
 
+def refresh_instagram_token():
+  settings = Settings.get_instance()
+  insta = InstagramClient(settings.get_config('INSTAGRAM_ACCESS_TOKEN'))
+
+  result, new_token = insta.refresh_token()
+  if not result:
+    settings.set_config('INSTAGRAM_ACCESS_TOKEN', new_token)
+
+
 def get_instagram_recent_post(interval):
   """get Instagram recent post"""
 
   settings = Settings.get_instance()
   insta = InstagramClient(settings.get_config('INSTAGRAM_ACCESS_TOKEN'))
 
-  media = insta.get_recent_media()
+  result, media = insta.get_recent_media()
+  if not result:
+    return False, '', []
 
   created_time = media.get_timestamp()
   now_time = datetime.now(timezone.utc)
@@ -121,10 +133,13 @@ def main_routine():
   settings = Settings.get_instance()
   interval = int(settings.get_config('INTERVAL_SECONDS'))
 
+  schedule.every(interval).seconds.do(get_and_post, (interval))
+  schedule.mondy.do(refresh_instagram_token)
+
   print('I2T INTERVAL:' + str(interval) + ' secs')
   while True:
-    get_and_post(interval)
-    time.sleep(interval)
+    schedule.run_pending()
+    time.sleep(1)
 
 
 # main
