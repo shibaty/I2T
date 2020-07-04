@@ -12,8 +12,10 @@ from datetime import datetime, timezone
 from settings.Settings import Settings
 from clients.InstagramClient import InstagramClient
 from clients.TwitterClient import TwitterClient
+from utils.Logger import Logger
 
 DOWNLOAD_FILE_PATH = '/tmp/'
+logger = Logger.get_logger()
 
 
 def download_medias(urls):
@@ -39,12 +41,16 @@ def cleanup_medias(paths):
 
 
 def refresh_instagram_token():
+  logger.info('refresh instagram token.')
   settings = Settings.get_instance()
   insta = InstagramClient(settings.get_config('INSTAGRAM_ACCESS_TOKEN'))
 
   result, new_token = insta.refresh_token()
   if not result:
-    settings.set_config('INSTAGRAM_ACCESS_TOKEN', new_token)
+    logger.error('refresh instagram token fails.')
+    return
+  logger.info('new token:' + new_token)
+  settings.set_config('INSTAGRAM_ACCESS_TOKEN', new_token)
 
 
 def get_instagram_recent_post(interval):
@@ -55,6 +61,7 @@ def get_instagram_recent_post(interval):
 
   result, media = insta.get_recent_media()
   if not result:
+    logger.error('get instagram recent post error.')
     return False, '', []
 
   created_time = media.get_timestamp()
@@ -62,12 +69,13 @@ def get_instagram_recent_post(interval):
   delta = now_time - created_time
 
   if int(delta.total_seconds()) >= interval + 10:
+    logger.info('no recent media.')
     return False, '', []
 
   caption = media.get_caption()
   urls = media.get_media_urls()
 
-  print('get instagram Caption: ' + caption)
+  logger.info('get instagram Caption: ' + caption)
 
   return True, caption, urls
 
@@ -75,7 +83,7 @@ def get_instagram_recent_post(interval):
 def post_twitter(caption, paths):
   """post twitter"""
 
-  print("post twitter Caption: " + caption)
+  logger.info("post twitter Caption: " + caption)
 
   settings = Settings.get_instance()
   config = settings.get_config_all()
@@ -125,7 +133,7 @@ def get_and_post(interval):
       post_twitter(caption, paths)
       cleanup_medias(paths)
   except IOError:
-    print('Network unreachable?')
+    logger.error('Network unreachable?')
 
 
 def main_routine():
@@ -134,9 +142,9 @@ def main_routine():
   interval = int(settings.get_config('INTERVAL_SECONDS'))
 
   schedule.every(interval).seconds.do(get_and_post, (interval))
-  schedule.mondy.do(refresh_instagram_token)
+  schedule.every().monday.do(refresh_instagram_token)
 
-  print('I2T INTERVAL:' + str(interval) + ' secs')
+  logger.info('I2T INTERVAL:' + str(interval) + ' secs')
   while True:
     schedule.run_pending()
     time.sleep(1)
