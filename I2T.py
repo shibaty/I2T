@@ -83,7 +83,7 @@ def get_instagram_recent_post(interval):
 def post_twitter(caption, paths):
   """post twitter"""
 
-  logger.info("post twitter Caption: " + caption)
+  logger.info('post twitter Caption: ' + caption)
 
   settings = Settings.get_instance()
   config = settings.get_config_all()
@@ -104,20 +104,22 @@ def post_twitter(caption, paths):
   media_ids_len = len(media_ids)
   count = 1
   count_max = 0
-  count_message = ""
+  count_message = ''
 
   if media_ids_len > 0:
     if media_videos_count > 0:
       count_max = 1 + media_videos_count
-      count_message = str(count) + "/" + str(count_max) + " "
+      count_message = str(count) + '/' + str(count_max) + ' '
       count = count + 1
     message = (count_message + caption)[0:140]
     twit.post_with_medias(message, media_ids)
 
+  count_message = ''
   for path in paths:
     mime_type = mimetypes.guess_type(path)[0]
     if 'video' in mime_type:
-      count_message = str(count) + "/" + str(count_max) + " "
+      if count_max > 0:
+        count_message = str(count) + '/' + str(count_max) + ' '
       message = (count_message + caption)[0:140]
       media_video_id = twit.media_upload(path, mime_type)
       twit.post_with_medias(message, {media_video_id})

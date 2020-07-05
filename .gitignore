@@ -1,6 +1,6 @@
 .DS_Store
 config.py
 *.db
-*.log
+*.log*
 *.pyc
 .venv/
