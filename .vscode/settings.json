@@ -17,5 +17,5 @@
   "editor.formatOnSave": true,
   "editor.formatOnType": true,
   "python.pythonPath": ".venv/bin/python",
-  "python.languageServer": "Microsoft"
+  "python.languageServer": "Pylance"
 }
