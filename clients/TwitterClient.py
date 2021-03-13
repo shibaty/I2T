@@ -25,7 +25,7 @@ class TwitterClient(object):
     file_size = os.path.getsize(path)
     media_category = 'TweetImage'
     if 'video' in mime_type:
-      media_category = 'tweet_video'
+      media_category = 'TweetVideo'
     media_id = self.upload_api.media.upload(
         command='INIT', media_type=mime_type,
         media_category=media_category,
