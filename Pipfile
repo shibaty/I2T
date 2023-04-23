@@ -13,4 +13,9 @@ twitter = "==1.18.0"
 schedule = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.11"
+
+[scripts]
+force_get_and_post = "python force_get_and_post.py"
+force_refresh_instagram_token = "python force_refresh_instagram_token.py"
+
