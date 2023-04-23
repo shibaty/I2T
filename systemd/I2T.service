@@ -6,7 +6,7 @@ After=network.target remote-fs.target
 User=pi
 Group=pi
 WorkingDirectory=/home/pi/I2T
-ExecStart=/usr/local/bin/pipenv run python -u /home/pi/I2T/I2T.py
+ExecStart=/home/pi/I2T/.venv/bin/python -u /home/pi/I2T/I2T.py
 Restart=always
 Type=simple
 
