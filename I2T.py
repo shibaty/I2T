@@ -90,7 +90,8 @@ def post_twitter(caption, paths):
   twit = TwitterClient(config['TWITTER_CONSUMER_KEY'],
                        config['TWITTER_CONSUMER_SECRET'],
                        config['TWITTER_ACCESS_TOKEN_KEY'],
-                       config['TWITTER_ACCESS_TOKEN_SECRET'])
+                       config['TWITTER_ACCESS_TOKEN_SECRET'],
+                       config['TWITTER_BEARER_TOKEN'])
 
   media_ids = []
   media_videos_count = 0

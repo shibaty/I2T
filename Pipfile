@@ -9,7 +9,7 @@ autopep8 = "*"
 
 [packages]
 requests = "==2.23.0"
-twitter = "==1.18.0"
+twitter = "==2.0a2"
 schedule = "*"
 
 [requires]

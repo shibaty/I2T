@@ -7,7 +7,7 @@
     "--max-line-length=120",
     "--ignore=E111,E114,W503"
   ],
-  "python.formatting.provider": "autopep8",
+  "python.formatting.provider": "none",
   "python.formatting.autopep8Args": [
     "--indent-size=2",
     "--aggressive",
@@ -17,5 +17,8 @@
   "editor.formatOnSave": true,
   "editor.formatOnType": true,
   "python.pythonPath": ".venv/bin/python",
-  "python.languageServer": "Pylance"
+  "python.languageServer": "Pylance",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8"
+  }
 }

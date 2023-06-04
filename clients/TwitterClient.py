@@ -9,16 +9,19 @@ import twitter
 class TwitterClient(object):
   """Twitter Client"""
 
-  def __init__(self, con_key, con_secret, token, token_secret):
+  def __init__(self, con_key, con_secret, token, token_secret, bearer_token):
     """Constructor"""
+    # OAUTH2の使い所が？
+    # self.auth2 = twitter.OAuth2(
+    #    bearer_token=bearer_token)
     self.auth = twitter.OAuth(token, token_secret, con_key, con_secret)
-    self.api = twitter.Twitter(auth=self.auth)
+    self.api = twitter.Twitter2(auth=self.auth)
     self.upload_api = twitter.Twitter(
         domain="upload.twitter.com", auth=self.auth)
 
   def post(self, message):
     """Post Message"""
-    self.api.statuses.update(status=message)
+    self.api.tweets(_json={"text": message})
 
   def media_upload(self, path, mime_type):
     """Media Upload"""
@@ -69,8 +72,12 @@ class TwitterClient(object):
 
   def post_with_medias(self, message, media_ids):
     """Post Message with Medias"""
-    self.api.statuses.update(
-        media_ids=self.__list2csv(media_ids), status=message)
+    self.api.tweets(_json={
+        "text": message,
+        "media": {
+            'media_ids': self.__list2csv(media_ids).split(',')
+        }
+    })
 
   @classmethod
   def __list2csv(cls, items):
