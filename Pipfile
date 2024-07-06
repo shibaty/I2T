@@ -8,9 +8,10 @@ flake8 = "*"
 autopep8 = "*"
 
 [packages]
-requests = "==2.23.0"
+requests = "*"
 twitter = "==2.0a2"
 schedule = "*"
+certifi = "*"
 
 [requires]
 python_version = "3.11"
@@ -18,4 +19,3 @@ python_version = "3.11"
 [scripts]
 force_get_and_post = "python force_get_and_post.py"
 force_refresh_instagram_token = "python force_refresh_instagram_token.py"
-
